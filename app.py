@@ -4,28 +4,13 @@ import joblib
 
 app = Flask(__name__)
 
-# --------------------------------------------------
-# LOAD TRAINED MODEL
-# --------------------------------------------------
-
 model = joblib.load("crop_yield_model.pkl")
-
-# --------------------------------------------------
-# LOAD DATASET
-# --------------------------------------------------
 
 data = pd.read_csv("crop_yield.csv")
 data.columns = data.columns.str.strip()
 
-# Target column
 target = "Yield"
-
-# Input features
 X = data.drop(columns=[target])
-
-# --------------------------------------------------
-# IDENTIFY FEATURE TYPES
-# --------------------------------------------------
 
 categorical_features = X.select_dtypes(
     include=["object", "category"]
@@ -35,59 +20,49 @@ numerical_features = X.select_dtypes(
     include=["int64", "float64", "int32", "float32"]
 ).columns.tolist()
 
+# Get unique values for categorical dropdowns
+categorical_options = {}
 
-# --------------------------------------------------
-# HOME PAGE
-# --------------------------------------------------
-
-@app.route("/")
-def home():
-
-    return render_template(
-        "index.html",
-        categorical_features=categorical_features,
-        numerical_features=numerical_features
+for column in categorical_features:
+    categorical_options[column] = sorted(
+        data[column].dropna().astype(str).unique().tolist()
     )
 
 
-# --------------------------------------------------
-# PREDICTION
-# --------------------------------------------------
+@app.route("/")
+def home():
+    return render_template(
+        "index.html",
+        categorical_features=categorical_features,
+        numerical_features=numerical_features,
+        categorical_options=categorical_options
+    )
+
 
 @app.route("/predict", methods=["POST"])
 def predict():
-
     input_data = {}
 
-    # Get values submitted from website
     for column in X.columns:
-
         value = request.form.get(column)
 
         if column in numerical_features:
             input_data[column] = float(value)
-
         else:
             input_data[column] = value
 
-    # Convert input into DataFrame
     new_data = pd.DataFrame([input_data])
 
-    # Make prediction
     prediction = model.predict(new_data)[0]
 
-    # Return result to website
     return render_template(
         "index.html",
         prediction=prediction,
         categorical_features=categorical_features,
-        numerical_features=numerical_features
+        numerical_features=numerical_features,
+        categorical_options=categorical_options
     )
 
-
-# --------------------------------------------------
-# RUN APPLICATION
-# --------------------------------------------------
 
 if __name__ == "__main__":
     app.run(debug=True)
