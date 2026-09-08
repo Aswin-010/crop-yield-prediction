@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Crop Yield Prediction</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+
+        <h1>🌾 Crop Yield Prediction</h1>
+
+        <p>
+            Predict agricultural crop yield using
+            Machine Learning
+        </p>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2>Enter Crop Details</h2>
+
+        <form action="/predict" method="POST">
+
+
+            <!-- CATEGORICAL FEATURES -->
+
+            {% for column in categorical_features %}
+
+            <div class="form-group">
+
+                <label for="{{ column }}">
+                    {{ column }}
+                </label>
+
+                <input
+                    type="text"
+                    id="{{ column }}"
+                    name="{{ column }}"
+                    placeholder="Enter {{ column }}"
+                    required
+                >
+
+            </div>
+
+            {% endfor %}
+
+
+            <!-- NUMERICAL FEATURES -->
+
+            {% for column in numerical_features %}
+
+            <div class="form-group">
+
+                <label for="{{ column }}">
+                    {{ column }}
+                </label>
+
+                <input
+                    type="number"
+                    step="any"
+                    id="{{ column }}"
+                    name="{{ column }}"
+                    placeholder="Enter {{ column }}"
+                    required
+                >
+
+            </div>
+
+            {% endfor %}
+
+
+            <button type="submit">
+                Predict Yield
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <!-- PREDICTION RESULT -->
+
+    {% if prediction is defined %}
+
+    <div class="result-card">
+
+        <h2>🌱 Predicted Crop Yield</h2>
+
+        <div class="prediction">
+
+            {{ "%.2f"|format(prediction) }}
+
+        </div>
+
+        <p>
+            Predicted yield based on the
+            provided agricultural conditions.
+        </p>
+
+    </div>
+
+    {% endif %}
+
+
+    <div class="info-card">
+
+        <h3>About This Prediction</h3>
+
+        <p>
+            This prediction is generated using a
+            Random Forest Regression machine learning
+            model trained on agricultural data.
+        </p>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>
